@@ -96,7 +96,6 @@ func saveToken(spt adal.Token) error {
 		return err
 	}
 
-	log.Printf("Acquired token was saved in '%s' file\n", defaultTokenCachePath())
 	return nil
 }
 

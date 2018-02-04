@@ -7,12 +7,15 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/urfave/cli"
 )
 
 const (
-	flagVerbose = "verbose"
+	appVersion   = "0.1"
+	flagVerbose  = "verbose"
+	userAgentStr = "github.com/yangl900/armclient-go"
 )
 
 func main() {
@@ -20,13 +23,13 @@ func main() {
 
 	app.Name = "armclient"
 	app.Usage = "Command line client for Azure Resource Manager APIs."
-	app.Version = "0.1"
-	app.Description = "This is a Go implementation of original windows version ARMClient (https://github.com/projectkudu/ARMClient/). " +
-		"I intend to keep commands same as original, and now you can enjoy the useful tool on Linux. " +
-		"Additionally in MSI environment like Azure Cloud Shell (https://shell.azure.com/), login is handled automatically. It just works."
+	app.Version = appVersion
+	app.Description = `
+		This is a Go implementation of original windows version ARMClient (https://github.com/projectkudu/ARMClient/).
+		Commands are kept same as much as possible, and now you can enjoy the useful tool on Linux & Mac.
+		Additionally in Azure Cloud Shell (https://shell.azure.com/), login is handled automatically. It just works.`
 
 	app.Action = func(c *cli.Context) error {
-		fmt.Println("no verb specified!")
 		cli.ShowAppHelp(c)
 		return nil
 	}
@@ -98,7 +101,11 @@ func doRequest(c *cli.Context) error {
 	}
 
 	req.Header.Set("Authorization", token)
+	req.Header.Set("User-Agent", userAgentStr)
+	req.Header.Set("x-ms-client-request-id", newUUID())
+	req.Header.Set("Accept", "application/json")
 
+	start := time.Now()
 	response, err := client.Do(req)
 	if err != nil {
 		return errors.New("Request failed: " + err.Error())
@@ -112,7 +119,7 @@ func doRequest(c *cli.Context) error {
 	}
 
 	if c.GlobalBool(flagVerbose) {
-		fmt.Println(responseDetail(response))
+		fmt.Println(responseDetail(response, time.Now().Sub(start)))
 	}
 
 	fmt.Println(prettyJSON(buf))
