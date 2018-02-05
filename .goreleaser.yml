@@ -1,0 +1,19 @@
+# .goreleaser.yml
+# Build customization
+builds:
+  - main: armclient.go
+    binary: armclient
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+# Archive customization
+archive:
+  format: tar.gz
+  replacements:
+    amd64: 64-bit
+    darwin: macOS
+  files:
+    - LICENSE
