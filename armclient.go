@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -33,6 +34,8 @@ func main() {
 		cli.ShowAppHelp(c)
 		return nil
 	}
+
+	log.SetOutput(ioutil.Discard)
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/user"
+	"strings"
 
 	"github.com/Azure/go-autorest/autorest/adal"
 )
@@ -18,6 +20,7 @@ const (
 	activeDirectoryEndpoint = "https://login.microsoftonline.com/"
 	armResource             = "https://management.core.windows.net/"
 	clientAppID             = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
+	commonTenant            = "common"
 )
 
 type responseJSON struct {
@@ -27,12 +30,21 @@ type responseJSON struct {
 	TokenType    string `json:"token_type"`
 }
 
-func defaultTokenCachePath() string {
+type tenant struct {
+	ID       string `json:"id"`
+	TenantID string `json:"tenantId"`
+}
+
+type tenantList struct {
+	Value []tenant `json:"value"`
+}
+
+func defaultTokenCachePath(tenant string) string {
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defaultTokenPath := usr.HomeDir + "/.adal/accessToken.json"
+	defaultTokenPath := fmt.Sprintf("%s/.armclient/accessToken.%s.json", usr.HomeDir, strings.ToLower(tenant))
 	return defaultTokenPath
 }
 
@@ -90,8 +102,8 @@ func refreshToken(oauthConfig adal.OAuthConfig,
 	return spt, spt.Refresh()
 }
 
-func saveToken(spt adal.Token) error {
-	err := adal.SaveToken(defaultTokenCachePath(), 0600, spt)
+func saveToken(spt adal.Token, tenant string) error {
+	err := adal.SaveToken(defaultTokenCachePath(tenant), 0600, spt)
 	if err != nil {
 		return err
 	}
@@ -99,33 +111,78 @@ func saveToken(spt adal.Token) error {
 	return nil
 }
 
-func acquireAuthTokenDeviceFlow() (string, error) {
-	oauthConfig, err := adal.NewOAuthConfig(activeDirectoryEndpoint, "common")
+func getTenants(commonTenantToken string) (ret []string, e error) {
+	url, err := getRequestURL("/tenants?api-version=2015-01-01")
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{}
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+
+	req.Header.Set("Authorization", commonTenantToken)
+	req.Header.Set("User-Agent", userAgentStr)
+	req.Header.Set("x-ms-client-request-id", newUUID())
+	req.Header.Set("Accept", "application/json")
+
+	response, err := client.Do(req)
+	if err != nil {
+		return nil, errors.New("Failed to list tenants: " + err.Error())
+	}
+
+	defer response.Body.Close()
+	buf, err := ioutil.ReadAll(response.Body)
+
+	var tenants tenantList
+	json.Unmarshal(buf, &tenants)
+
+	for _, t := range tenants.Value {
+		ret = append(ret, t.TenantID)
+		log.Printf("Tenant found: %s", t.TenantID)
+	}
+
+	return ret, nil
+}
+
+func acquireAuthTokenDeviceFlow(tenantID string) (string, error) {
+	oauthConfig, err := adal.NewOAuthConfig(activeDirectoryEndpoint, tenantID)
 	if err != nil {
 		panic(err)
 	}
 
 	callback := func(token adal.Token) error {
-		return saveToken(token)
+		return saveToken(token, tenantID)
 	}
 
-	if _, err := os.Stat(defaultTokenCachePath()); err == nil {
-		token, err := adal.LoadToken(defaultTokenCachePath())
+	if _, err := os.Stat(defaultTokenCachePath(tenantID)); err == nil {
+		token, err := adal.LoadToken(defaultTokenCachePath(tenantID))
 		if err != nil {
 			return "", err
 		}
 
 		var spt *adal.ServicePrincipalToken
 		if token.IsExpired() {
-			spt, err = refreshToken(*oauthConfig, clientAppID, armResource, defaultTokenCachePath(), callback)
-			if err != nil {
-				return "", err
+			spt, err = refreshToken(*oauthConfig, clientAppID, armResource, defaultTokenCachePath(tenantID), callback)
+			if err == nil {
+				return fmt.Sprintf("%s %s", spt.Type, spt.AccessToken), nil
 			}
+		} else {
+			return fmt.Sprintf("%s %s", token.Type, token.AccessToken), nil
+		}
+	}
 
-			return fmt.Sprintf("%s %s", spt.Type, spt.AccessToken), nil
+	if tenantID != commonTenant {
+		_, err := acquireAuthTokenDeviceFlow(commonTenant)
+		if err != nil {
+			return "", err
 		}
 
-		return fmt.Sprintf("%s %s", token.Type, token.AccessToken), nil
+		spt, err := refreshToken(*oauthConfig, clientAppID, armResource, defaultTokenCachePath(commonTenant), callback)
+		if err != nil {
+			return "", err
+		}
+
+		return fmt.Sprintf("%s %s", spt.Type, spt.AccessToken), nil
 	}
 
 	var spt *adal.ServicePrincipalToken
@@ -134,8 +191,9 @@ func acquireAuthTokenDeviceFlow() (string, error) {
 		clientAppID,
 		armResource,
 		callback)
+
 	if err == nil {
-		err = saveToken(spt.Token)
+		err = saveToken(spt.Token, tenantID)
 	}
 
 	return fmt.Sprintf("%s %s", spt.Type, spt.AccessToken), nil
@@ -181,12 +239,28 @@ func acquireAuthToken() (string, error) {
 	_, isCloudShell := os.LookupEnv("ACC_CLOUD")
 
 	if !isCloudShell {
-		token, err := acquireAuthTokenDeviceFlow()
+		token, err := acquireAuthTokenDeviceFlow(commonTenant)
 		if err != nil {
 			return "", err
 		}
 
-		return token, nil
+		tenants, err := getTenants(token)
+		if err != nil {
+			return "", errors.New("Failed to list tenants: " + err.Error())
+		}
+
+		var tokens []string
+		for _, t := range tenants {
+			token, err := acquireAuthTokenDeviceFlow(t)
+
+			if err != nil {
+				log.Println("Failed to login to tenant: ", t)
+			} else {
+				tokens = append(tokens, token)
+			}
+		}
+
+		return tokens[0], nil
 	}
 
 	token, err := acquireAuthTokenMSI()
