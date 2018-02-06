@@ -37,43 +37,49 @@ func main() {
 
 	log.SetOutput(ioutil.Discard)
 
-	app.Flags = []cli.Flag{
-		cli.BoolFlag{
-			Name:  flagVerbose,
-			Usage: "output verbose messages like request Uri, headers etc.",
-		},
+	verboseFlag := cli.BoolFlag{
+		Name:  flagVerbose,
+		Usage: "output verbose messages like request Uri, headers etc.",
 	}
+
+	app.Flags = []cli.Flag{verboseFlag}
 
 	app.Commands = []cli.Command{
 		{
 			Name:   "get",
 			Action: doRequest,
 			Usage:  "Makes a GET request to ARM endpoint.",
+			Flags:  []cli.Flag{verboseFlag},
 		},
 		{
 			Name:   "head",
 			Action: doRequest,
 			Usage:  "Makes a HEAD request to ARM endpoint.",
+			Flags:  []cli.Flag{verboseFlag},
 		},
 		{
 			Name:   "put",
 			Action: doRequest,
 			Usage:  "Makes a PUT request to ARM endpoint.",
+			Flags:  []cli.Flag{verboseFlag},
 		},
 		{
 			Name:   "patch",
 			Action: doRequest,
 			Usage:  "Makes a PUT request to ARM endpoint.",
+			Flags:  []cli.Flag{verboseFlag},
 		},
 		{
 			Name:   "delete",
 			Action: doRequest,
 			Usage:  "Makes a DELETE request to ARM endpoint.",
+			Flags:  []cli.Flag{verboseFlag},
 		},
 		{
 			Name:   "post",
 			Action: doRequest,
 			Usage:  "Makes a POST request to ARM endpoint.",
+			Flags:  []cli.Flag{verboseFlag},
 		},
 	}
 
@@ -121,7 +127,7 @@ func doRequest(c *cli.Context) error {
 		return errors.New("Request failed: " + err.Error())
 	}
 
-	if c.GlobalBool(flagVerbose) {
+	if c.GlobalBool(flagVerbose) || c.Bool(flagVerbose) {
 		fmt.Println(responseDetail(response, time.Now().Sub(start)))
 	}
 
