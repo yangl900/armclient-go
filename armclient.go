@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -91,6 +92,11 @@ func main() {
 	}
 }
 
+func isWriteVerb(verb string) bool {
+	v := strings.ToUpper(verb)
+	return v == "PUT" || v == "POST" || v == "PATCH"
+}
+
 func doRequest(c *cli.Context) error {
 	if len(c.Args()) == 0 {
 		return errors.New("No path specified")
@@ -101,8 +107,31 @@ func doRequest(c *cli.Context) error {
 		return err
 	}
 
+	var reqBody string
+	if isWriteVerb(c.Command.Name) && c.NArg() > 1 {
+		reqBody = c.Args().Get(1)
+
+		if strings.HasPrefix(reqBody, "@") {
+			filePath := strings.TrimSuffix(strings.TrimPrefix(reqBody, "@'"), "'")
+
+			if _, err := os.Stat(filePath); err != nil {
+				return errors.New("File not found: " + filePath)
+			}
+
+			buffer, err := ioutil.ReadFile(filePath)
+			if err != nil {
+				return errors.New("Failed to read file: " + filePath)
+			}
+
+			reqBody = prettyJSON(buffer)
+		} else {
+			reqBody = prettyJSON([]byte(reqBody))
+			fmt.Println(reqBody)
+		}
+	}
+
 	client := &http.Client{}
-	req, _ := http.NewRequest(strings.ToUpper(c.Command.Name), url, nil)
+	req, _ := http.NewRequest(strings.ToUpper(c.Command.Name), url, bytes.NewReader([]byte(reqBody)))
 
 	token, err := acquireAuthToken()
 	if err != nil {
@@ -113,6 +142,7 @@ func doRequest(c *cli.Context) error {
 	req.Header.Set("User-Agent", userAgentStr)
 	req.Header.Set("x-ms-client-request-id", newUUID())
 	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
 	start := time.Now()
 	response, err := client.Do(req)
