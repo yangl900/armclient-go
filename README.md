@@ -26,6 +26,14 @@ bit.tar.gz -OutFile armclient.tar.gz
 ```
 And unzip the tar.gz file, only binary needed is armclient.exe
 
+For MacOS:
+Download and unzip
+```
+https://github.com/yangl900/armclient-go/releases/download/v0.2.0/armclient-go_0.2.0_macOS_64-bit.tar.gz
+```
+
+I did NOT test, if anyone made it working please let me know:)
+
 # How to use it
 It's very straight-forward. Syntax is exactly same as original ARMClient. To *GET* your subscriptions, simply do
 
