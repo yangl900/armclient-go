@@ -94,4 +94,17 @@ x-ms-ratelimit-remaining-tenant-reads: 14998
 }
 ```
 
+## Input for request body
+2 ways to specify an input for request body, take create resource group as an example. You can do one of following 2 ways:
+
+1. inline the request body in command line
+```
+armclient put /subscriptions/{subscription}/resourceGroups/{resourceGroup}?api-version=2018-01-01 "{'location':'westus'}"
+```
+2. save the request body in a JSON file and use @<file-path> as parameter
+```
+armclient put /subscriptions/{subscription}/resourceGroups/{resourceGroup}?api-version=2018-01-01 @./resourceGroup.json
+```
+
+# Exploring Azure APIs
 More REST APIs please see Azure REST API document. The original [ARMClient wiki](https://github.com/projectkudu/ARMClient/wiki) also has pretty good documentation.
