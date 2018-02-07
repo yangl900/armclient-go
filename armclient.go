@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -112,7 +113,7 @@ func doRequest(c *cli.Context) error {
 		reqBody = c.Args().Get(1)
 
 		if strings.HasPrefix(reqBody, "@") {
-			filePath := strings.TrimSuffix(strings.TrimPrefix(reqBody, "@'"), "'")
+			filePath, _ := filepath.Abs(strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(reqBody, "@"), "'"), "'"))
 
 			if _, err := os.Stat(filePath); err != nil {
 				return errors.New("File not found: " + filePath)
