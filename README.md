@@ -4,7 +4,7 @@ A simple command line tool to invoke the Azure Resource Manager API from any OS.
 # Why we need this
 I always loved the windows version ARMClient. It is super useful when exploring Azure Resource Manager APIs. You just work with REST API directly and with `--verbose` flag you can see the raw request / response with headers.
 
-While I started working on non-windows platform, there isn't such thing available. Existing ARMClient code is based on full .Net framework and winform. You can do curl but it's too much work and you need handle the Azure AD login manually. So I decided to implement one in Golang and release it in Windows, Linux and MacOS.
+While I started working on non-windows platform, there isn't such thing available. Existing ARMClient code is based on full .Net framework and winform. Porting to .Net Core requires siginificant changes. You can do curl but it's too much work and you need handle the Azure AD login manually. So I decided to implement one in Golang and release it in Windows, Linux and MacOS.
 
 ## Highlights
 * Integrated with Azure Cloud Shell. When running armclient in Cloud Shell, sign-in will be taken care automatically. No sign in needed, just go! (you do need install)
@@ -100,6 +100,34 @@ x-ms-ratelimit-remaining-tenant-reads: 14998
     }
   ]
 }
+```
+
+To print out current tenant access token claims, do
+```
+armclient token
+```
+
+Output looks like:
+```json
+{
+  "aud": "https://management.core.windows.net/",
+  "iss": "https://sts.windows.net/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxx/",
+  "iat": 1518072605,
+  "nbf": 1518072605,
+  "exp": 1518076505,
+  "acr": "1",
+  "appid": "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+  "appidacr": "0",
+  "idp": "live.com",
+  "name": "Anders Liu",
+  "scp": "user_impersonation",
+  "ver": "1.0"
+}
+```
+
+To print out the raw JWT token, do
+```
+armclient token -r
 ```
 
 ## Input for request body
