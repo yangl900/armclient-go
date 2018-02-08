@@ -14,10 +14,11 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/urfave/cli"
+	"github.com/atotto/clipboard"
 )
 
 const (
-	appVersion   = "0.2"
+	appVersion   = "0.21"
 	userAgentStr = "github.com/yangl900/armclient-go"
 	flagVerbose  = "verbose"
 	flagRaw      = "raw, r"
@@ -187,6 +188,7 @@ func printToken(c *cli.Context) error {
 
 	if c.Bool(strings.Split(flagRaw, ",")[0]) {
 		fmt.Println(token)
+		clipboard.WriteAll(token)
 	} else {
 		segments := strings.Split(token, ".")
 
@@ -197,6 +199,9 @@ func printToken(c *cli.Context) error {
 		decoded, _ := jwt.DecodeSegment(segments[1])
 
 		fmt.Println(prettyJSON(decoded))
+
+		clipboard.WriteAll(token)
+		fmt.Println("\n\nToken copied to clipboard successfully.")
 	}
 
 	return nil
