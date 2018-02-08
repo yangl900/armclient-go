@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	appVersion   = "0.21"
+	appVersion   = "0.2.1"
 	userAgentStr = "github.com/yangl900/armclient-go"
 	flagVerbose  = "verbose"
 	flagRaw      = "raw, r"
