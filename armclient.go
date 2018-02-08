@@ -12,13 +12,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/urfave/cli"
 )
 
 const (
 	appVersion   = "0.2"
-	flagVerbose  = "verbose"
 	userAgentStr = "github.com/yangl900/armclient-go"
+	flagVerbose  = "verbose"
+	flagRaw      = "raw, r"
 )
 
 func main() {
@@ -41,7 +43,12 @@ func main() {
 
 	verboseFlag := cli.BoolFlag{
 		Name:  flagVerbose,
-		Usage: "output verbose messages like request Uri, headers etc.",
+		Usage: "Output verbose messages like request Uri, headers etc.",
+	}
+
+	rawFlag := cli.BoolFlag{
+		Name:  flagRaw,
+		Usage: "Print out raw acces token.",
 	}
 
 	app.Flags = []cli.Flag{verboseFlag}
@@ -82,6 +89,12 @@ func main() {
 			Action: doRequest,
 			Usage:  "Makes a POST request to ARM endpoint.",
 			Flags:  []cli.Flag{verboseFlag},
+		},
+		{
+			Name:   "token",
+			Action: printToken,
+			Usage:  "Prints the current tenant token.",
+			Flags:  []cli.Flag{rawFlag},
 		},
 	}
 
@@ -163,5 +176,28 @@ func doRequest(c *cli.Context) error {
 	}
 
 	fmt.Println(prettyJSON(buf))
+	return nil
+}
+
+func printToken(c *cli.Context) error {
+	token, err := acquireAuthToken()
+	if err != nil {
+		return errors.New("Failed to get access token: " + err.Error())
+	}
+
+	if c.Bool(strings.Split(flagRaw, ",")[0]) {
+		fmt.Println(token)
+	} else {
+		segments := strings.Split(token, ".")
+
+		if len(segments) != 3 {
+			return errors.New("Invalid JWT token retrieved")
+		}
+
+		decoded, _ := jwt.DecodeSegment(segments[1])
+
+		fmt.Println(prettyJSON(decoded))
+	}
+
 	return nil
 }
