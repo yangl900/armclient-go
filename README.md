@@ -16,12 +16,12 @@ armclient is just one binary, you can copy it to whereever you want and use it.
 
 For Linux (I only tested Ubuntu):
 ```bash
-curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.0/armclient-go_0.2.0_linux_64-bit.tar.gz | tar xz
+curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.1/armclient-go_0.2.1_linux_64-bit.tar.gz | tar xz
 ```
 
 For Windows (In PowerShell):
 ```powershell
-curl https://github.com/yangl900/armclient-go/releases/download/v0.2.0/armclient-go_0.2.0_windows_64-
+curl https://github.com/yangl900/armclient-go/releases/download/v0.2.1/armclient-go_0.2.1_windows_64-
 bit.tar.gz -OutFile armclient.tar.gz
 ```
 And unzip the tar.gz file, only binary needed is armclient.exe
@@ -29,10 +29,14 @@ And unzip the tar.gz file, only binary needed is armclient.exe
 For MacOS:
 Download and unzip
 ```
-https://github.com/yangl900/armclient-go/releases/download/v0.2.0/armclient-go_0.2.0_macOS_64-bit.tar.gz
+https://github.com/yangl900/armclient-go/releases/download/v0.2.1/armclient-go_0.2.1_macOS_64-bit.tar.gz
 ```
 
-I did NOT test, if anyone made it working please let me know:)
+Alternatively for mac you can run the following in bash.
+
+```bash
+curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.1/armclient-go_0.2.1_macOS_64-bit.tar.gz | tar xz
+```
 
 # How to use it
 It's very straight-forward. Syntax is exactly same as original ARMClient. To *GET* your subscriptions, simply do
