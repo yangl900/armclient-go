@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/atotto/clipboard"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/urfave/cli"
-	"github.com/atotto/clipboard"
 )
 
 const (
@@ -200,8 +200,12 @@ func printToken(c *cli.Context) error {
 
 		fmt.Println(prettyJSON(decoded))
 
-		clipboard.WriteAll(token)
-		fmt.Println("\n\nToken copied to clipboard successfully.")
+		if !clipboard.Unsupported {
+			err := clipboard.WriteAll(token)
+			if err == nil {
+				fmt.Println("\n\nToken copied to clipboard successfully.")
+			}
+		}
 	}
 
 	return nil
