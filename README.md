@@ -1,3 +1,4 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/yangl900/armclient-go)](https://goreportcard.com/report/github.com/yangl900/armclient-go)
 # armclient
 A simple command line tool to invoke the Azure Resource Manager API from any OS. Inspired by original windows version ARMClient (https://github.com/projectkudu/ARMClient).
 
@@ -148,3 +149,14 @@ armclient put /subscriptions/{subscription}/resourceGroups/{resourceGroup}?api-v
 
 # Exploring Azure APIs
 More REST APIs please see Azure REST API document. The original [ARMClient wiki](https://github.com/projectkudu/ARMClient/wiki) also has pretty good documentation.
+
+# Contribution
+Build the project
+```
+make
+```
+
+Add dependency
+```
+dep ensure
+```

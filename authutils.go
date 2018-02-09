@@ -188,7 +188,7 @@ func acquireAuthTokenDeviceFlow(tenantID string) (string, error) {
 		callback)
 
 	if err == nil {
-		err = saveToken(spt.Token(), tenantID)
+		saveToken(spt.Token(), tenantID)
 	}
 
 	return fmt.Sprintf("%s %s", spt.Token().Type, spt.Token().AccessToken), nil
