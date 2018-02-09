@@ -159,7 +159,7 @@ func acquireAuthTokenDeviceFlow(tenantID string) (string, error) {
 		if token.IsExpired() {
 			spt, err = refreshToken(*oauthConfig, clientAppID, armResource, defaultTokenCachePath(tenantID), callback)
 			if err == nil {
-				return fmt.Sprintf("%s %s", spt.Type, spt.AccessToken), nil
+				return fmt.Sprintf("%s %s", spt.Token().Type, spt.Token().AccessToken), nil
 			}
 		} else {
 			return fmt.Sprintf("%s %s", token.Type, token.AccessToken), nil
@@ -177,7 +177,7 @@ func acquireAuthTokenDeviceFlow(tenantID string) (string, error) {
 			return "", err
 		}
 
-		return fmt.Sprintf("%s %s", spt.Type, spt.AccessToken), nil
+		return fmt.Sprintf("%s %s", spt.Token().Type, spt.Token().AccessToken), nil
 	}
 
 	var spt *adal.ServicePrincipalToken
@@ -188,10 +188,10 @@ func acquireAuthTokenDeviceFlow(tenantID string) (string, error) {
 		callback)
 
 	if err == nil {
-		err = saveToken(spt.Token, tenantID)
+		err = saveToken(spt.Token(), tenantID)
 	}
 
-	return fmt.Sprintf("%s %s", spt.Type, spt.AccessToken), nil
+	return fmt.Sprintf("%s %s", spt.Token().Type, spt.Token().AccessToken), nil
 }
 
 func acquireAuthTokenMSI() (string, error) {
