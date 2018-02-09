@@ -1,4 +1,4 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/yangl900/armclient-go)](https://goreportcard.com/report/github.com/yangl900/armclient-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/yangl900/armclient-go)](https://goreportcard.com/report/github.com/yangl900/armclient-go) [![Build Status](https://travis-ci.org/yangl900/armclient-go.svg?branch=master)](https://travis-ci.org/yangl900/armclient-go)
 # armclient
 A simple command line tool to invoke the Azure Resource Manager API from any OS. Inspired by original windows version ARMClient (https://github.com/projectkudu/ARMClient).
 
