@@ -111,7 +111,7 @@ func saveToken(spt adal.Token, tenant string) error {
 	return nil
 }
 
-func getTenants(commonTenantToken string) (ret []string, e error) {
+func getTenants(commonTenantToken string) (ret []tenant, e error) {
 	url, err := getRequestURL("/tenants?api-version=2015-01-01")
 	if err != nil {
 		return nil, err
@@ -136,12 +136,7 @@ func getTenants(commonTenantToken string) (ret []string, e error) {
 	var tenants tenantList
 	json.Unmarshal(buf, &tenants)
 
-	for _, t := range tenants.Value {
-		ret = append(ret, t.TenantID)
-		log.Printf("Tenant found: %s", t.TenantID)
-	}
-
-	return ret, nil
+	return tenants.Value, nil
 }
 
 func acquireAuthTokenDeviceFlow(tenantID string) (string, error) {
@@ -235,38 +230,52 @@ func acquireAuthTokenMSI() (string, error) {
 	return r.TokenType + " " + r.AccessToken, nil
 }
 
-func acquireAuthToken() (string, error) {
+func acquireAuthTokenCurrentTenant() (string, error) {
+	return acquireAuthToken("")
+}
+
+func acquireAuthToken(tenantID string) (string, error) {
 	_, isCloudShell := os.LookupEnv("ACC_CLOUD")
 
-	if !isCloudShell {
-		token, err := acquireAuthTokenDeviceFlow(commonTenant)
+	if isCloudShell {
+		token, err := acquireAuthTokenMSI()
 		if err != nil {
 			return "", err
 		}
 
-		tenants, err := getTenants(token)
-		if err != nil {
-			return "", errors.New("Failed to list tenants: " + err.Error())
-		}
-
-		var tokens []string
-		for _, t := range tenants {
-			token, err := acquireAuthTokenDeviceFlow(t)
-
-			if err != nil {
-				log.Println("Failed to login to tenant: ", t)
-			} else {
-				tokens = append(tokens, token)
-			}
-		}
-
-		return tokens[0], nil
+		return token, nil
 	}
 
-	token, err := acquireAuthTokenMSI()
+	token, err := acquireAuthTokenDeviceFlow(commonTenant)
 	if err != nil {
 		return "", err
 	}
 
-	return token, nil
+	if tenantID != "" {
+		token, err := acquireAuthTokenDeviceFlow(tenantID)
+
+		if err != nil {
+			log.Println("Failed to login to tenant: ", tenantID)
+		}
+
+		return token, nil
+	}
+
+	tenants, err := getTenants(token)
+	if err != nil {
+		return "", errors.New("Failed to list tenants: " + err.Error())
+	}
+
+	var tokens []string
+	for _, t := range tenants {
+		token, err := acquireAuthTokenDeviceFlow(t.TenantID)
+
+		if err != nil {
+			log.Println("Failed to login to tenant: ", t.TenantID)
+		} else {
+			tokens = append(tokens, token)
+		}
+	}
+
+	return tokens[0], nil
 }

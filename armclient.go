@@ -22,6 +22,7 @@ const (
 	userAgentStr = "github.com/yangl900/armclient-go"
 	flagVerbose  = "verbose"
 	flagRaw      = "raw, r"
+	flagTenantID = "tenant, t"
 )
 
 func main() {
@@ -50,6 +51,11 @@ func main() {
 	rawFlag := cli.BoolFlag{
 		Name:  flagRaw,
 		Usage: "Print out raw acces token.",
+	}
+
+	tenantIDFlag := cli.StringFlag{
+		Name:  flagTenantID,
+		Usage: "Specify the tenant Id.",
 	}
 
 	app.Flags = []cli.Flag{verboseFlag}
@@ -94,8 +100,8 @@ func main() {
 		{
 			Name:   "token",
 			Action: printToken,
-			Usage:  "Prints the current tenant token.",
-			Flags:  []cli.Flag{rawFlag},
+			Usage:  "Prints the specified tenant access token. If not specified, default to current tenant.",
+			Flags:  []cli.Flag{rawFlag, tenantIDFlag},
 		},
 	}
 
@@ -148,7 +154,7 @@ func doRequest(c *cli.Context) error {
 	client := &http.Client{}
 	req, _ := http.NewRequest(strings.ToUpper(c.Command.Name), url, bytes.NewReader([]byte(reqBody)))
 
-	token, err := acquireAuthToken()
+	token, err := acquireAuthTokenCurrentTenant()
 	if err != nil {
 		return errors.New("Failed to acquire auth token: " + err.Error())
 	}
@@ -181,7 +187,9 @@ func doRequest(c *cli.Context) error {
 }
 
 func printToken(c *cli.Context) error {
-	token, err := acquireAuthToken()
+	tenantID := c.String(strings.Split(flagTenantID, ",")[0])
+	token, err := acquireAuthToken(tenantID)
+
 	if err != nil {
 		return errors.New("Failed to get access token: " + err.Error())
 	}
