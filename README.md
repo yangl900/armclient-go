@@ -15,28 +15,21 @@ While I started working on non-windows platform, there isn't such thing availabl
 # Installation
 armclient is just one binary, you can copy it to whereever you want and use it.
 
-For Linux (I only tested Ubuntu):
+For Linux:
 ```bash
-curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.1/armclient-go_0.2.1_linux_64-bit.tar.gz | tar xz
+curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.2/armclient-go_0.2.2_linux_64-bit.tar.gz | tar xz
 ```
 
 For Windows (In PowerShell):
 ```powershell
-curl https://github.com/yangl900/armclient-go/releases/download/v0.2.1/armclient-go_0.2.1_windows_64-
+curl https://github.com/yangl900/armclient-go/releases/download/v0.2.2/armclient-go_0.2.2_windows_64-
 bit.tar.gz -OutFile armclient.tar.gz
 ```
 And unzip the tar.gz file, only binary needed is armclient.exe
 
 For MacOS:
-Download and unzip
-```
-https://github.com/yangl900/armclient-go/releases/download/v0.2.1/armclient-go_0.2.1_macOS_64-bit.tar.gz
-```
-
-Alternatively for mac you can run the following in bash.
-
 ```bash
-curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.1/armclient-go_0.2.1_macOS_64-bit.tar.gz | tar xz
+curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.2/armclient-go_0.2.2_macOS_64-bit.tar.gz | tar xz
 ```
 
 # How to use it
@@ -112,7 +105,7 @@ To print out current tenant access token claims, do
 armclient token
 ```
 
-Output looks like:
+Output looks like following, token will also be copied to clipboard automatically (if available). Linux environment requires `xclip` installed for the clipboard copy.
 ```json
 {
   "aud": "https://management.core.windows.net/",
@@ -135,6 +128,11 @@ To print out the raw JWT token, do
 armclient token -r
 ```
 
+To print the access token of a different tenant:
+```
+armclient token --tenant {tenantId or name}
+```
+
 ## Input for request body
 2 ways to specify an input for request body, take create resource group as an example. You can do one of following 2 ways:
 
@@ -145,6 +143,21 @@ armclient put /subscriptions/{subscription}/resourceGroups/{resourceGroup}?api-v
 2. save the request body in a JSON file and use @<file-path> as parameter
 ```
 armclient put /subscriptions/{subscription}/resourceGroups/{resourceGroup}?api-version=2018-01-01 @./resourceGroup.json
+```
+## Working with multiple Azure AD Directories (tenants)
+To list all tenants you have access to:
+```bash
+armclient tenant list
+```
+
+To set a tenant as active tenant(default is the first tenant):
+```bash
+armclient tenant set {tenantID}
+```
+
+To show current active tenant:
+```bash
+armclient tenant show
 ```
 
 # Exploring Azure APIs
