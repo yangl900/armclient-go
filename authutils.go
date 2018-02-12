@@ -31,8 +31,10 @@ type responseJSON struct {
 }
 
 type tenant struct {
-	ID       string `json:"id"`
-	TenantID string `json:"tenantId"`
+	ID          string `json:"id"`
+	TenantID    string `json:"tenantId"`
+	ContryCode  string `json:"countryCode"`
+	DisplayName string `json:"displayName"`
 }
 
 type tenantList struct {
@@ -44,8 +46,8 @@ func defaultTokenCachePath(tenant string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defaultTokenPath := fmt.Sprintf("%s/.armclient/accessToken.%s.json", usr.HomeDir, strings.ToLower(tenant))
-	return defaultTokenPath
+
+	return fmt.Sprintf("%s/.armclient/accessToken.%s.json", usr.HomeDir, strings.ToLower(tenant))
 }
 
 func acquireTokenDeviceCodeFlow(oauthConfig adal.OAuthConfig,
@@ -112,7 +114,7 @@ func saveToken(spt adal.Token, tenant string) error {
 }
 
 func getTenants(commonTenantToken string) (ret []tenant, e error) {
-	url, err := getRequestURL("/tenants?api-version=2015-01-01")
+	url, err := getRequestURL("/tenants?api-version=2018-01-01")
 	if err != nil {
 		return nil, err
 	}
@@ -230,8 +232,49 @@ func acquireAuthTokenMSI() (string, error) {
 	return r.TokenType + " " + r.AccessToken, nil
 }
 
+func acquireBootstrapToken() (string, error) {
+	_, isCloudShell := os.LookupEnv("ACC_CLOUD")
+
+	if isCloudShell {
+		token, err := acquireAuthTokenMSI()
+		if err != nil {
+			return "", err
+		}
+
+		return token, nil
+	}
+
+	return acquireAuthTokenDeviceFlow(commonTenant)
+}
+
 func acquireAuthTokenCurrentTenant() (string, error) {
-	return acquireAuthToken("")
+	userSettings, err := readSettings()
+	if err != nil {
+		return "", fmt.Errorf("Failed to read current tennat: %v", err)
+	}
+
+	tenantID := userSettings.ActiveTenant
+	if tenantID == "" {
+		token, err := acquireBootstrapToken()
+		if err != nil {
+			return "", err
+		}
+
+		tenants, err := getTenants(token)
+		if err != nil {
+			return "", errors.New("Failed to list tenants: " + err.Error())
+		}
+
+		if len(tenants) == 0 {
+			return "", fmt.Errorf("You don't have access to any tenants (directory)")
+		}
+
+		userSettings.ActiveTenant = tenants[0].TenantID
+		tenantID = tenants[0].TenantID
+		saveSettings(userSettings)
+	}
+
+	return acquireAuthToken(tenantID)
 }
 
 func acquireAuthToken(tenantID string) (string, error) {
@@ -246,36 +289,14 @@ func acquireAuthToken(tenantID string) (string, error) {
 		return token, nil
 	}
 
-	token, err := acquireAuthTokenDeviceFlow(commonTenant)
+	if tenantID == "" {
+		panic(fmt.Errorf("Tenant ID required for acquire token"))
+	}
+
+	token, err := acquireAuthTokenDeviceFlow(tenantID)
 	if err != nil {
-		return "", err
+		log.Println("Failed to login to tenant: ", tenantID)
 	}
 
-	if tenantID != "" {
-		token, err := acquireAuthTokenDeviceFlow(tenantID)
-
-		if err != nil {
-			log.Println("Failed to login to tenant: ", tenantID)
-		}
-
-		return token, nil
-	}
-
-	tenants, err := getTenants(token)
-	if err != nil {
-		return "", errors.New("Failed to list tenants: " + err.Error())
-	}
-
-	var tokens []string
-	for _, t := range tenants {
-		token, err := acquireAuthTokenDeviceFlow(t.TenantID)
-
-		if err != nil {
-			log.Println("Failed to login to tenant: ", t.TenantID)
-		} else {
-			tokens = append(tokens, token)
-		}
-	}
-
-	return tokens[0], nil
+	return token, nil
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -103,6 +104,28 @@ func main() {
 			Usage:  "Prints the specified tenant access token. If not specified, default to current tenant.",
 			Flags:  []cli.Flag{rawFlag, tenantIDFlag},
 		},
+		{
+			Name:   "tenant",
+			Action: printTenants,
+			Usage:  "Manage tenants (Azure AD directory) current account have access to. Set / show active tenant.",
+			Subcommands: []cli.Command{
+				{
+					Name:   "set",
+					Action: setActiveTenant,
+					Usage:  "Sets an active tenant.",
+				},
+				{
+					Name:   "show",
+					Action: showActiveTenant,
+					Usage:  "Shows current active tenant.",
+				},
+				{
+					Name:   "list",
+					Action: printTenants,
+					Usage:  "Shows all tenants.",
+				},
+			},
+		},
 	}
 
 	app.CustomAppHelpTemplate = cli.AppHelpTemplate
@@ -188,7 +211,14 @@ func doRequest(c *cli.Context) error {
 
 func printToken(c *cli.Context) error {
 	tenantID := c.String(strings.Split(flagTenantID, ",")[0])
-	token, err := acquireAuthToken(tenantID)
+
+	var token string
+	var err error
+	if tenantID == "" {
+		token, err = acquireAuthTokenCurrentTenant()
+	} else {
+		token, err = acquireAuthToken(tenantID)
+	}
 
 	if err != nil {
 		return errors.New("Failed to get access token: " + err.Error())
@@ -215,6 +245,66 @@ func printToken(c *cli.Context) error {
 			}
 		}
 	}
+
+	return nil
+}
+
+func printTenants(c *cli.Context) error {
+	token, err := acquireAuthTokenCurrentTenant()
+	if err != nil {
+		return errors.New("Failed to get access token: " + err.Error())
+	}
+
+	tenants, err := getTenants(token)
+	if err != nil {
+		return errors.New("Failed to get tenants: " + err.Error())
+	}
+
+	buffer, _ := json.Marshal(tenants)
+	fmt.Println(prettyJSON(buffer))
+
+	return nil
+}
+
+func setActiveTenant(c *cli.Context) error {
+	if c.NArg() == 0 {
+		return errors.New("No tenant Id specified")
+	}
+
+	specifiedTenant := c.Args().First()
+
+	token, err := acquireAuthTokenCurrentTenant()
+	if err != nil {
+		return errors.New("Failed to get access token: " + err.Error())
+	}
+
+	tenants, err := getTenants(token)
+	if err != nil {
+		return errors.New("Failed to get tenants: " + err.Error())
+	}
+
+	for _, t := range tenants {
+		if strings.ToLower(t.TenantID) == strings.ToLower(specifiedTenant) {
+			saveSettings(settings{ActiveTenant: specifiedTenant})
+			return nil
+		}
+	}
+
+	return fmt.Errorf("You don't have access to specified tenant: %s", specifiedTenant)
+}
+
+func showActiveTenant(c *cli.Context) error {
+	_, err := acquireAuthTokenCurrentTenant()
+	if err != nil {
+		return errors.New("Failed to get access token: " + err.Error())
+	}
+
+	setting, err := readSettings()
+	if err != nil {
+		return fmt.Errorf("Failed to show current tenant: %v", err)
+	}
+
+	fmt.Println(setting.ActiveTenant)
 
 	return nil
 }
