@@ -8,6 +8,7 @@ import (
 const armEndpoint string = "https://management.azure.com"
 
 func isArmURLPath(urlPath string) bool {
+	urlPath = strings.ToLower(urlPath)
 	return strings.HasPrefix(urlPath, "/subscriptions") ||
 		strings.HasPrefix(urlPath, "/tenants") ||
 		strings.HasPrefix(urlPath, "/providers")
