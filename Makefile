@@ -1,4 +1,5 @@
 all: 
+	go test -v
 	GOOS=linux go build -o armclient .
 
 clean:
