@@ -1,10 +1,11 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/yangl900/armclient-go)](https://goreportcard.com/report/github.com/yangl900/armclient-go) [![Build Status](https://travis-ci.org/yangl900/armclient-go.svg?branch=master)](https://travis-ci.org/yangl900/armclient-go)
 # armclient
 A simple command line tool to invoke the Azure Resource Manager API from any OS. Inspired by original windows version ARMClient (https://github.com/projectkudu/ARMClient).
 
 # Why we need this
 I always loved the windows version ARMClient. It is super useful when exploring Azure Resource Manager APIs. You just work with REST API directly and with `--verbose` flag you can see the raw request / response with headers.
 
-While I started working on non-windows platform, there isn't such thing available. Existing ARMClient code is based on full .Net framework and winform. You can do curl but it's too much work and you need handle the Azure AD login manually. So I decided to implement one in Golang and release it in Windows, Linux and MacOS.
+While I started working on non-windows platform, there isn't such thing available. Existing ARMClient code is based on full .Net framework and winform. Porting to .Net Core requires siginificant changes. You can do curl but it's too much work and you need handle the Azure AD login manually. So I decided to implement one in Golang and release it in Windows, Linux and MacOS.
 
 ## Highlights
 * Integrated with Azure Cloud Shell. When running armclient in Cloud Shell, sign-in will be taken care automatically. No sign in needed, just go! (you do need install)
@@ -14,25 +15,22 @@ While I started working on non-windows platform, there isn't such thing availabl
 # Installation
 armclient is just one binary, you can copy it to whereever you want and use it.
 
-For Linux (I only tested Ubuntu):
+For Linux:
 ```bash
-curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.0/armclient-go_0.2.0_linux_64-bit.tar.gz | tar xz
+curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.2/armclient-go_0.2.2_linux_64-bit.tar.gz | tar xz
 ```
 
 For Windows (In PowerShell):
 ```powershell
-curl https://github.com/yangl900/armclient-go/releases/download/v0.2.0/armclient-go_0.2.0_windows_64-
+curl https://github.com/yangl900/armclient-go/releases/download/v0.2.2/armclient-go_0.2.2_windows_64-
 bit.tar.gz -OutFile armclient.tar.gz
 ```
 And unzip the tar.gz file, only binary needed is armclient.exe
 
 For MacOS:
-Download and unzip
+```bash
+curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.2/armclient-go_0.2.2_macOS_64-bit.tar.gz | tar xz
 ```
-https://github.com/yangl900/armclient-go/releases/download/v0.2.0/armclient-go_0.2.0_macOS_64-bit.tar.gz
-```
-
-I did NOT test, if anyone made it working please let me know:)
 
 # How to use it
 It's very straight-forward. Syntax is exactly same as original ARMClient. To *GET* your subscriptions, simply do
@@ -102,6 +100,39 @@ x-ms-ratelimit-remaining-tenant-reads: 14998
 }
 ```
 
+To print out current tenant access token claims, do
+```
+armclient token
+```
+
+Output looks like following, token will also be copied to clipboard automatically (if available). Linux environment requires `xclip` installed for the clipboard copy.
+```json
+{
+  "aud": "https://management.core.windows.net/",
+  "iss": "https://sts.windows.net/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxx/",
+  "iat": 1518072605,
+  "nbf": 1518072605,
+  "exp": 1518076505,
+  "acr": "1",
+  "appid": "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+  "appidacr": "0",
+  "idp": "live.com",
+  "name": "Anders Liu",
+  "scp": "user_impersonation",
+  "ver": "1.0"
+}
+```
+
+To print out the raw JWT token, do
+```
+armclient token -r
+```
+
+To print the access token of a different tenant:
+```
+armclient token --tenant {tenantId or name}
+```
+
 ## Input for request body
 2 ways to specify an input for request body, take create resource group as an example. You can do one of following 2 ways:
 
@@ -113,6 +144,32 @@ armclient put /subscriptions/{subscription}/resourceGroups/{resourceGroup}?api-v
 ```
 armclient put /subscriptions/{subscription}/resourceGroups/{resourceGroup}?api-version=2018-01-01 @./resourceGroup.json
 ```
+## Working with multiple Azure AD Directories (tenants)
+To list all tenants you have access to:
+```bash
+armclient tenant list
+```
+
+To set a tenant as active tenant(default is the first tenant):
+```bash
+armclient tenant set {tenantID}
+```
+
+To show current active tenant:
+```bash
+armclient tenant show
+```
 
 # Exploring Azure APIs
 More REST APIs please see Azure REST API document. The original [ARMClient wiki](https://github.com/projectkudu/ARMClient/wiki) also has pretty good documentation.
+
+# Contribution
+Build the project
+```
+make
+```
+
+Add dependency
+```
+dep ensure
+```
