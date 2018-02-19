@@ -9,6 +9,7 @@ bin/
 *.test
 test
 test/
+armclient-go
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out

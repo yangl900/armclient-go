@@ -25,7 +25,7 @@ func prettyJSON(buffer []byte) string {
 	return prettyJSON
 }
 
-func responseDetail(response *http.Response, duration time.Duration) string {
+func responseDetail(response *http.Response, duration time.Duration, reqheaders []string) string {
 	var buffer bytes.Buffer
 	fmt.Fprint(&buffer, "---------- Request -----------------------\n")
 	fmt.Fprintln(&buffer)
@@ -35,6 +35,12 @@ func responseDetail(response *http.Response, duration time.Duration) string {
 	fmt.Fprintf(&buffer, "User-Agent: %s\n", response.Request.UserAgent())
 	fmt.Fprintf(&buffer, "Accept: %s\n", response.Request.Header.Get("Accept"))
 	fmt.Fprintf(&buffer, "x-ms-client-request-id: %s\n", response.Request.Header.Get("x-ms-client-request-id"))
+
+	if reqheaders != nil {
+		for _, h := range reqheaders {
+			fmt.Fprintf(&buffer, "%s: %s\n", h, response.Request.Header.Get(h))
+		}
+	}
 
 	fmt.Fprintln(&buffer)
 	fmt.Fprintf(&buffer, "---------- Response (%s) ------------\n", duration.Truncate(time.Millisecond).String())

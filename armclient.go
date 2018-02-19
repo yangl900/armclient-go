@@ -24,6 +24,7 @@ const (
 	flagVerbose  = "verbose"
 	flagRaw      = "raw, r"
 	flagTenantID = "tenant, t"
+	flagHeader   = "header, H"
 )
 
 func main() {
@@ -49,6 +50,11 @@ func main() {
 		Usage: "Output verbose messages like request Uri, headers etc.",
 	}
 
+	headerFlag := cli.StringSliceFlag{
+		Name:  flagHeader,
+		Usage: "Specify additional request headers.",
+	}
+
 	rawFlag := cli.BoolFlag{
 		Name:  flagRaw,
 		Usage: "Print out raw acces token.",
@@ -66,37 +72,37 @@ func main() {
 			Name:   "get",
 			Action: doRequest,
 			Usage:  "Makes a GET request to ARM endpoint.",
-			Flags:  []cli.Flag{verboseFlag},
+			Flags:  []cli.Flag{verboseFlag, headerFlag},
 		},
 		{
 			Name:   "head",
 			Action: doRequest,
 			Usage:  "Makes a HEAD request to ARM endpoint.",
-			Flags:  []cli.Flag{verboseFlag},
+			Flags:  []cli.Flag{verboseFlag, headerFlag},
 		},
 		{
 			Name:   "put",
 			Action: doRequest,
 			Usage:  "Makes a PUT request to ARM endpoint.",
-			Flags:  []cli.Flag{verboseFlag},
+			Flags:  []cli.Flag{verboseFlag, headerFlag},
 		},
 		{
 			Name:   "patch",
 			Action: doRequest,
 			Usage:  "Makes a PUT request to ARM endpoint.",
-			Flags:  []cli.Flag{verboseFlag},
+			Flags:  []cli.Flag{verboseFlag, headerFlag},
 		},
 		{
 			Name:   "delete",
 			Action: doRequest,
 			Usage:  "Makes a DELETE request to ARM endpoint.",
-			Flags:  []cli.Flag{verboseFlag},
+			Flags:  []cli.Flag{verboseFlag, headerFlag},
 		},
 		{
 			Name:   "post",
 			Action: doRequest,
 			Usage:  "Makes a POST request to ARM endpoint.",
-			Flags:  []cli.Flag{verboseFlag},
+			Flags:  []cli.Flag{verboseFlag, headerFlag},
 		},
 		{
 			Name:   "token",
@@ -188,6 +194,20 @@ func doRequest(c *cli.Context) error {
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
+	additionalHeaders := c.StringSlice(strings.Split(flagHeader, ",")[0])
+	headerNames := make([]string, 0)
+	if additionalHeaders != nil {
+		for _, h := range additionalHeaders {
+			segments := strings.Split(h, "=")
+			if len(segments) == 2 {
+				req.Header.Set(segments[0], segments[1])
+				headerNames = append(headerNames, segments[0])
+			} else {
+				return fmt.Errorf("Cannot parse specified header '%s'. Value must be in format Header=Value", h)
+			}
+		}
+	}
+
 	start := time.Now()
 	response, err := client.Do(req)
 	if err != nil {
@@ -202,7 +222,7 @@ func doRequest(c *cli.Context) error {
 	}
 
 	if c.GlobalBool(flagVerbose) || c.Bool(flagVerbose) {
-		fmt.Println(responseDetail(response, time.Now().Sub(start)))
+		fmt.Println(responseDetail(response, time.Now().Sub(start), headerNames))
 	}
 
 	fmt.Println(prettyJSON(buf))

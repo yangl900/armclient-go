@@ -22,7 +22,7 @@ func isArmURLPath(urlPath string) bool {
 func getRequestURL(path string) (string, error) {
 	u, err := url.ParseRequestURI(path)
 
-	if err != nil {
+	if err != nil || !u.IsAbs() {
 		if !isArmURLPath(path) {
 			return "", errors.New("Url path specified is invalid")
 		}

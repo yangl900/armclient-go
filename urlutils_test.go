@@ -24,6 +24,11 @@ func TestGetRequestURL(t *testing.T) {
 		t.Error("Should accept westus.management.azure.com", err)
 		t.Fail()
 	}
+
+	if _, err := getRequestURL("/subscriptions?api-version=2015-01-01"); err != nil {
+		t.Error("Should accept /subscriptions?api-version=2015-01-01", err)
+		t.Fail()
+	}
 }
 
 func TestArmUrlPath(t *testing.T) {
