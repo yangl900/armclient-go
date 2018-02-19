@@ -10,17 +10,29 @@ import (
 	"path/filepath"
 )
 
+var (
+	settingPath string
+)
+
 type settings struct {
 	ActiveTenant string `json:"activeTenant"`
 }
 
 func defaultSettingsPath() string {
+	if settingPath != "" {
+		return settingPath
+	}
+
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	return fmt.Sprintf("%s/.armclient/settings.json", usr.HomeDir)
+}
+
+func setDefaultSettingsPath(path string) {
+	settingPath = path
 }
 
 func saveSettings(setting settings) error {
