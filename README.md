@@ -144,6 +144,21 @@ armclient put /subscriptions/{subscription}/resourceGroups/{resourceGroup}?api-v
 ```
 armclient put /subscriptions/{subscription}/resourceGroups/{resourceGroup}?api-version=2018-01-01 @./resourceGroup.json
 ```
+
+## Add additional request headers
+Use flag `--header` or `-H` for additional request headers. For example:
+
+```bash
+armclient get /subscriptions?api-version=2018-01-01 -H Custom-Header=my-header-value-123 --verbose
+```
+
+## Target ARM endpoint in specific region
+Absolute Uri is accepted, so just specify the complete Uri:
+
+```
+armclient get https://westus.management.azure.com/subscriptions?api-version=2018-01-01
+```
+
 ## Working with multiple Azure AD Directories (tenants)
 To list all tenants you have access to:
 ```bash
