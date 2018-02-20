@@ -17,19 +17,19 @@ armclient is just one binary, you can copy it to whereever you want and use it.
 
 For Linux:
 ```bash
-curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.2/armclient-go_0.2.2_linux_64-bit.tar.gz | tar xz
+curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.3/armclient-go_linux_64-bit.tar.gz | tar xz
 ```
 
 For Windows (In PowerShell):
 ```powershell
-curl https://github.com/yangl900/armclient-go/releases/download/v0.2.2/armclient-go_0.2.2_windows_64-
-bit.tar.gz -OutFile armclient.tar.gz
+curl https://github.com/yangl900/armclient-go/releases/download/v0.2.3/armclient-go_windows_64-
+bit.zip -OutFile armclient.zip
 ```
-And unzip the tar.gz file, only binary needed is armclient.exe
+And unzip the file, only binary needed is armclient.exe
 
 For MacOS:
 ```bash
-curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.2/armclient-go_0.2.2_macOS_64-bit.tar.gz | tar xz
+curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.3/armclient-go_macOS_64-bit.tar.gz | tar xz
 ```
 
 # How to use it
