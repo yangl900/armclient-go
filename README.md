@@ -195,3 +195,7 @@ Add dependency
 ```
 dep ensure
 ```
+
+# Credits
+- thanks @jeffhollan to enable token copy to clipboard
+- thanks @luanshixia to enable Homebrew installation
