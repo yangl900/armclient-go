@@ -28,6 +28,13 @@ bit.zip -OutFile armclient.zip
 And unzip the file, only binary needed is armclient.exe
 
 For MacOS:
+
+Use Homebrew
+```
+brew install yangl900/armclient-go/armclient-go
+```
+
+or use a released binary: 
 ```bash
 curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.3/armclient-go_macOS_64-bit.tar.gz | tar xz
 ```
