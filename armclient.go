@@ -34,6 +34,9 @@ func main() {
 	app.Usage = "Command line client for Azure Resource Manager APIs."
 	app.Version = appVersion
 	app.Description = `
+		Cross-platform open source command line tool for accessing Azure Resource Manager REST APIs.
+		Github repo: https://github.com/yangl900/armclient-go
+
 		This is a Go implementation of original windows version ARMClient (https://github.com/projectkudu/ARMClient/).
 		Commands are kept same as much as possible, and now you can enjoy the useful tool on Linux & Mac.
 		Additionally in Azure Cloud Shell (https://shell.azure.com/), login is handled automatically. It just works.`
