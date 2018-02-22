@@ -16,7 +16,6 @@ import (
 )
 
 const (
-	msiEndpoint             = "http://localhost:50342/oauth2/token"
 	activeDirectoryEndpoint = "https://login.microsoftonline.com/"
 	armResource             = "https://management.core.windows.net/"
 	clientAppID             = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
@@ -196,8 +195,8 @@ func acquireAuthTokenDeviceFlow(tenantID string) (string, error) {
 	return fmt.Sprintf("%s %s", spt.Token().Type, spt.Token().AccessToken), nil
 }
 
-func acquireAuthTokenMSI() (string, error) {
-	msiendpoint, _ := url.Parse(msiEndpoint)
+func acquireAuthTokenMSI(endpoint string) (string, error) {
+	msiendpoint, _ := url.Parse(endpoint)
 
 	parameters := url.Values{}
 	parameters.Add("resource", armResource)
@@ -233,10 +232,10 @@ func acquireAuthTokenMSI() (string, error) {
 }
 
 func acquireBootstrapToken() (string, error) {
-	_, isCloudShell := os.LookupEnv("ACC_CLOUD")
+	endpoint, hasMsiEndpoint := os.LookupEnv("MSI_ENDPOINT")
 
-	if isCloudShell {
-		token, err := acquireAuthTokenMSI()
+	if hasMsiEndpoint {
+		token, err := acquireAuthTokenMSI(endpoint)
 		if err != nil {
 			return "", err
 		}
@@ -278,10 +277,10 @@ func acquireAuthTokenCurrentTenant() (string, error) {
 }
 
 func acquireAuthToken(tenantID string) (string, error) {
-	_, isCloudShell := os.LookupEnv("ACC_CLOUD")
+	endpoint, hasMsiEndpoint := os.LookupEnv("MSI_ENDPOINT")
 
-	if isCloudShell {
-		token, err := acquireAuthTokenMSI()
+	if hasMsiEndpoint {
+		token, err := acquireAuthTokenMSI(endpoint)
 		if err != nil {
 			return "", err
 		}
