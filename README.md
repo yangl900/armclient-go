@@ -3,17 +3,17 @@
 A simple command line tool to invoke the Azure Resource Manager API from any OS. Inspired by original windows version ARMClient (https://github.com/projectkudu/ARMClient).
 
 # Why we need this
-I always loved the windows version ARMClient. It is super useful when exploring Azure Resource Manager APIs. You just work with REST API directly and with `--verbose` flag you can see the raw request / response with headers.
+I always loved the windows version ARMClient. It is super useful when exploring Azure Resource Manager APIs. You just work with ARM's REST API directly and with `--verbose` flag to see the raw request & response with headers.
 
-While I started working on non-windows platform, there isn't such thing available. Existing ARMClient code is based on full .Net framework and winform. Porting to .Net Core requires siginificant changes. You can do curl but it's too much work and you need handle the Azure AD login manually. So I decided to implement one in Golang and release it in Windows, Linux and MacOS.
+When I started working on a non-windows platform, there wasn't a similar tool available. Existing ARMClient code is based on a full .NET framework and winform thus porting to .NET Core required siginificant changes. You can do a curl but it's too much work and you still need to handle the Azure AD login manually. So I decided to implement one in Golang and release it for Windows, Linux and MacOS.
 
 ## Highlights
-* Integrated with Azure Cloud Shell. When running armclient in Cloud Shell, sign-in will be taken care automatically. No sign in needed, just go! (you do need install)
+* Integrated with Azure Cloud Shell. When running armclient in Cloud Shell, sign-in will be taken care automatically. No sign in needed, just run after you install it.
 
 [![Launch Cloud Shell](https://shell.azure.com/images/launchcloudshell.png "Launch Cloud Shell")](https://shell.azure.com)
 
 # Installation
-armclient is just one binary, you can copy it to whereever you want and use it.
+armclient is just one binary, just copy and use it.
 
 For Linux:
 ```bash
@@ -25,7 +25,7 @@ For Windows (In PowerShell):
 curl https://github.com/yangl900/armclient-go/releases/download/v0.2.3/armclient-go_windows_64-
 bit.zip -OutFile armclient.zip
 ```
-And unzip the file, only binary needed is armclient.exe
+And unzip the file, the only binary needed is armclient.exe.
 
 For MacOS:
 
@@ -40,13 +40,13 @@ curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.3/armcl
 ```
 
 # How to use it
-It's very straight-forward. Syntax is exactly same as original ARMClient. To *GET* your subscriptions, simply do
+Syntax is exactly the same as the original ARMClient. To *GET* your subscriptions, simply run
 
 ```
 armclient get /subscriptions?api-version=2018-01-01
 ```
 
-Output is simply JSON returned from Azure Resource Manager endpoint, e.g.
+Output is JSON returned from the Azure Resource Manager endpoint, e.g.
 ```json
 {
   "value": [
@@ -64,7 +64,7 @@ Output is simply JSON returned from Azure Resource Manager endpoint, e.g.
   ]
 }
 ```
-If more details of the request needed, add `--verbose` flag and here you go
+If more details of the request are needed, add `--verbose` flag
 ```
 ---------- Request -----------------------
 
@@ -107,12 +107,12 @@ x-ms-ratelimit-remaining-tenant-reads: 14998
 }
 ```
 
-To print out current tenant access token claims, do
+To print out the current tenant access token claims, run
 ```
 armclient token
 ```
 
-Output looks like following, token will also be copied to clipboard automatically (if available). Linux environment requires `xclip` installed for the clipboard copy.
+Output looks like the following. A token will also be copied to your clipboard automatically (if available). Linux environments require `xclip` to be installed for the clipboard copy.
 ```json
 {
   "aud": "https://management.core.windows.net/",
@@ -130,24 +130,24 @@ Output looks like following, token will also be copied to clipboard automaticall
 }
 ```
 
-To print out the raw JWT token, do
+To print out the raw JWT token, run
 ```
 armclient token -r
 ```
 
-To print the access token of a different tenant:
+To print the access token of a different tenant use the --tenant parameter
 ```
 armclient token --tenant {tenantId or name}
 ```
 
 ## Input for request body
-2 ways to specify an input for request body, take create resource group as an example. You can do one of following 2 ways:
+There are 2 ways to specify an input for a request body, let's take a resource group creation as an example. You can do one of the following.
 
-1. inline the request body in command line
+1. Inline the request body in the command line
 ```
 armclient put /subscriptions/{subscription}/resourceGroups/{resourceGroup}?api-version=2018-01-01 "{'location':'westus'}"
 ```
-2. save the request body in a JSON file and use @<file-path> as parameter
+2. Save the request body in a JSON file and use @<file-path> as a parameter
 ```
 armclient put /subscriptions/{subscription}/resourceGroups/{resourceGroup}?api-version=2018-01-01 @./resourceGroup.json
 ```
@@ -159,8 +159,8 @@ Use flag `--header` or `-H` for additional request headers. For example:
 armclient get /subscriptions?api-version=2018-01-01 -H Custom-Header=my-header-value-123 --verbose
 ```
 
-## Target ARM endpoint in specific region
-Absolute Uri is accepted, so just specify the complete Uri:
+## Target ARM endpoint in a specific region
+The absolute URI is accepted, so just specify the complete URI:
 
 ```
 armclient get https://westus.management.azure.com/subscriptions?api-version=2018-01-01
@@ -172,18 +172,18 @@ To list all tenants you have access to:
 armclient tenant list
 ```
 
-To set a tenant as active tenant(default is the first tenant):
+To set a tenant as your active tenant (defaults to the first tenant):
 ```bash
 armclient tenant set {tenantID}
 ```
 
-To show current active tenant:
+To show the current active tenant:
 ```bash
 armclient tenant show
 ```
 
 # Exploring Azure APIs
-More REST APIs please see Azure REST API document. The original [ARMClient wiki](https://github.com/projectkudu/ARMClient/wiki) also has pretty good documentation.
+For more REST API references please see [Azure REST API documentation](https://docs.microsoft.com/rest/api/). The original [ARMClient wiki](https://github.com/projectkudu/ARMClient/wiki) also has good references.
 
 # Contribution
 Build the project
