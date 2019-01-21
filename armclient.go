@@ -92,7 +92,7 @@ func main() {
 		{
 			Name:   "patch",
 			Action: doRequest,
-			Usage:  "Makes a PUT request to ARM endpoint.",
+			Usage:  "Makes a PATCH request to ARM endpoint.",
 			Flags:  []cli.Flag{verboseFlag, headerFlag},
 		},
 		{
