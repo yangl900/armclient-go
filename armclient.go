@@ -25,6 +25,7 @@ const (
 	flagRaw      = "raw, r"
 	flagTenantID = "tenant, t"
 	flagHeader   = "header, H"
+	flagNoCopy   = "nocopy, n"
 )
 
 func main() {
@@ -66,6 +67,11 @@ func main() {
 	tenantIDFlag := cli.StringFlag{
 		Name:  flagTenantID,
 		Usage: "Specify the tenant Id.",
+	}
+
+	noCopyFlag := cli.BoolFlag{
+		Name:  flagNoCopy,
+		Usage: "Do not copy token to clipboard, print claims only.",
 	}
 
 	app.Flags = []cli.Flag{verboseFlag}
@@ -111,7 +117,7 @@ func main() {
 			Name:   "token",
 			Action: printToken,
 			Usage:  "Prints the specified tenant access token. If not specified, default to current tenant.",
-			Flags:  []cli.Flag{rawFlag, tenantIDFlag},
+			Flags:  []cli.Flag{rawFlag, tenantIDFlag, noCopyFlag},
 		},
 		{
 			Name:   "tenant",
@@ -261,7 +267,7 @@ func printToken(c *cli.Context) error {
 
 		fmt.Println(prettyJSON(decoded))
 
-		if !clipboard.Unsupported {
+		if !clipboard.Unsupported && !c.Bool(strings.Split(flagNoCopy, ",")[0]) {
 			err := clipboard.WriteAll(token)
 			if err == nil {
 				fmt.Println("\n\nToken copied to clipboard successfully.")
