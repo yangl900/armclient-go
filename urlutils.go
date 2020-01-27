@@ -8,8 +8,14 @@ import (
 )
 
 const (
-	armEndpoint       string = "https://management.azure.com"
-	armEndpointSuffix string = "management.azure.com"
+	armEndpoint string = "https://management.azure.com"
+)
+
+var (
+	allowedEndpoints []string = []string{
+		"management.azure.com",
+		"localhost",
+	}
 )
 
 func isArmURLPath(urlPath string) bool {
@@ -30,11 +36,18 @@ func getRequestURL(path string) (string, error) {
 		return armEndpoint + path, nil
 	}
 
-	if u.Scheme != "https" {
+	if u.Scheme != "https" && u.Hostname() != "localhost" {
 		return "", errors.New("Scheme must be https")
 	}
 
-	if !strings.HasSuffix(u.Hostname(), armEndpointSuffix) {
+	isSafeEndpoint := false
+	for _, v := range allowedEndpoints {
+		if strings.HasSuffix(u.Hostname(), v) {
+			isSafeEndpoint = true
+		}
+	}
+
+	if !isSafeEndpoint {
 		return "", fmt.Errorf("'%s' is not an ARM endpoint", u.Hostname())
 	}
 
