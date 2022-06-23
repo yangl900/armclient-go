@@ -1,0 +1,8 @@
+github.com/Azure/go-autorest v10.1.0+incompatible h1:iBTp0IhJrbn6Ouhgq2dxtBjdxT9OfebI9qYuBfCcvHs=
+github.com/Azure/go-autorest v10.1.0+incompatible/go.mod h1:r+4oMnoxhatjLLJ6zxSWATqVooLgysK6ZNox3g/xq24=
+github.com/atotto/clipboard v0.0.0-20171229224153-bc5958e1c833 h1:h/E5ryZTJAtOY6T3K6u/JA1OURt0nk1C4fITywxOp4E=
+github.com/atotto/clipboard v0.0.0-20171229224153-bc5958e1c833/go.mod h1:ZY9tmq7sm5xIbd9bOK4onWV4S6X0u6GY7Vn0Yu86PYI=
+github.com/dgrijalva/jwt-go v3.1.0+incompatible h1:FFziAwDQQ2dz1XClWMkwvukur3evtZx7x/wMHKM1i20=
+github.com/dgrijalva/jwt-go v3.1.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
+github.com/urfave/cli v1.20.0 h1:fDqGv3UG/4jbVl/QkFwEdddtEDjh/5Ov6X+0B/3bPaw=
+github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
